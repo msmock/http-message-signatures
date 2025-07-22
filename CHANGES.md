@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+- New types
+  * `FapiResourceRequestSigner` class
+
 1.3 (2024-10-22)
 ----------------
 
