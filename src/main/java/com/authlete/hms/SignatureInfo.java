@@ -105,6 +105,37 @@ public class SignatureInfo
 
 
     /**
+     * Get the signature metadata.
+     *
+     * @return
+     *         The signature metadata.
+     *
+     * @since 1.4
+     */
+    public SignatureMetadata getMetadata()
+    {
+        // signature-base
+        SignatureBase base = getSignatureBase();
+
+        if (base == null)
+        {
+            return null;
+        }
+
+        // signature-params-line
+        SignatureParamsLine paramsLine = base.getParamsLine();
+
+        if (paramsLine == null)
+        {
+            return null;
+        }
+
+        // The value of the signature-params-line (= signature metadata)
+        return paramsLine.getMetadata();
+    }
+
+
+    /**
      * Get the signature metadata in the serialized form. The value can be
      * used as part of the {@code Signature-Input} HTTP field value.
      *
@@ -124,24 +155,8 @@ public class SignatureInfo
      */
     public String getSerializedSignatureMetadata()
     {
-        // signature-base
-        SignatureBase base = getSignatureBase();
-
-        if (base == null)
-        {
-            return null;
-        }
-
-        // signature-params-line
-        SignatureParamsLine paramsLine = base.getParamsLine();
-
-        if (paramsLine == null)
-        {
-            return null;
-        }
-
-        // The value of the signature-params-line (= signature metadata)
-        SignatureMetadata metadata = paramsLine.getMetadata();
+        // The signature metadata.
+        SignatureMetadata metadata = getMetadata();
 
         if (metadata == null)
         {

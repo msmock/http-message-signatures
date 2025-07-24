@@ -1,8 +1,16 @@
 CHANGES
 =======
 
+- `FapiResourceResponseSigner` class
+  * `extends` the `FapiResourceResponseBase` class.
+
 - New types
+  * `FapiResourceRequestBase` class
   * `FapiResourceRequestSigner` class
+  * `FapiResourceRequestVerifier` class
+  * `FapiResourceResponseBase` class
+  * `FapiResourceResponseVerifier` class
+  * `SignatureEntry` class
 
 1.3 (2024-10-22)
 ----------------
