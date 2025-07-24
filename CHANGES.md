@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+1.4 (2025-07-24)
+----------------
+
 - `FapiResourceResponseSigner` class
   * `extends` the `FapiResourceResponseBase` class.
 
