@@ -37,6 +37,9 @@ import com.authlete.hms.SignatureMetadataParameters;
  * The base class for {@link FapiResourceResponseSigner} and
  * {@link FapiResourceResponseVerifier}.
  *
+ * @param <T>
+ *         The subclass.
+ *
  * @since 1.4
  *
  * @see <a href="https://openid.bitbucket.io/fapi/fapi-2_0-http-signatures.html"
@@ -153,10 +156,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
      * Set the HTTP method of the request. This is used as the value of the
      * {@code "@method";req} derived component.
      *
-     * <p>
-     * This must be set before calling the {@link #sign()} method.
-     * </p>
-     *
      * @param method
      *         The HTTP method of the request.
      *
@@ -197,10 +196,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
      * This is used as the value of the {@code "@target-uri";req} derived
      * component.
      *
-     * <p>
-     * This must be set before calling the {@link #sign()} method.
-     * </p>
-     *
      * @param targetUri
      *         The target URI (the original request URL) of the HTTP request.
      *
@@ -238,11 +233,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     /**
      * Set the value of the {@code Content-Digest} HTTP field of the request.
      * This is used as the value of the {@code "content-digest";req} component.
-     *
-     * <p>
-     * If the HTTP request contains a request body, this must be set before
-     * calling the {@link #sign()} method.
-     * </p>
      *
      * @param contentDigest
      *         The value of the {@code Content-Digest} HTTP field of the request.
@@ -282,10 +272,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
      * Set the status code of the HTTP response. This is used as the value of
      * the {@code "@status"} derived component.
      *
-     * <p>
-     * This must be set before calling the {@link #sign()} method.
-     * </p>
-     *
      * @param status
      *         The status code of the HTTP response.
      *
@@ -323,11 +309,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     /**
      * Set the value of the {@code Content-Digest} HTTP field of the response.
      * This is used as the value of the {@code "content-digest"} component.
-     *
-     * <p>
-     * If the HTTP response contains a request body, this must be set before
-     * calling the {@link #sign()} method.
-     * </p>
      *
      * @param contentDigest
      *         The value of the {@code Content-Digest} HTTP field of the response.

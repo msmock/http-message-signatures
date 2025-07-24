@@ -33,6 +33,9 @@ import com.authlete.hms.SignatureMetadataParameters;
  * The base class for {@link FapiResourceRequestSigner} and
  * {@link FapiResourceRequestVerifier}.
  *
+ * @param <T>
+ *         The subclass.
+ *
  * @since 1.4
  *
  * @see <a href="https://openid.bitbucket.io/fapi/fapi-2_0-http-signatures.html"
@@ -140,10 +143,6 @@ public abstract class FapiResourceRequestBase<T extends FapiResourceRequestBase<
      * Set the HTTP method of the request. This is used as the value of the
      * {@code "@method"} derived component.
      *
-     * <p>
-     * This must be set before calling the {@link #sign()} method.
-     * </p>
-     *
      * @param method
      *         The HTTP method of the request.
      *
@@ -183,10 +182,6 @@ public abstract class FapiResourceRequestBase<T extends FapiResourceRequestBase<
      * Set the target URI of the HTTP request.
      * This is used as the value of the {@code "@target-uri"} derived
      * component.
-     *
-     * <p>
-     * This must be set before calling the {@link #sign()} method.
-     * </p>
      *
      * @param targetUri
      *         The target URI of the HTTP request.
@@ -289,11 +284,6 @@ public abstract class FapiResourceRequestBase<T extends FapiResourceRequestBase<
     /**
      * Set the value of the {@code Content-Digest} HTTP field of the request.
      * This is used as the value of the {@code "content-digest"} component.
-     *
-     * <p>
-     * If the HTTP request contains a request body, this must be set before
-     * calling the {@link #sign()} method.
-     * </p>
      *
      * @param contentDigest
      *         The value of the {@code Content-Digest} HTTP field of the request.

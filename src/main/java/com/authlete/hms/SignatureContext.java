@@ -26,7 +26,7 @@ import java.security.SignatureException;
  * RFC 9421 HTTP Message Signatures, <a href=
  * "https://www.rfc-editor.org/rfc/rfc9421.html#section-1.1">Section 1.1.
  * Conventions and Terminology</a>, explains Signature Context as follows:
- * <p>
+ * </p>
  *
  * <blockquote>
  * <p><i>

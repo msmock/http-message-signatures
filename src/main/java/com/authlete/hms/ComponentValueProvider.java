@@ -593,6 +593,8 @@ public class ComponentValueProvider implements SignatureContext
      *         unavailable, {@code null} is returned.
      *
      * @throws SignatureException
+     *         If the value of the specified component is unavailable, even
+     *         when the component name represents a derived component.
      */
     public String getComponentValue(String componentName) throws SignatureException
     {
