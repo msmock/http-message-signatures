@@ -49,42 +49,42 @@ public abstract class FapiResourceRequestBase<T extends FapiResourceRequestBase<
     /**
      * The component identifier, {@code "@method"}.
      */
-    private static final ComponentIdentifier COMP_ID_METHOD =
+    static final ComponentIdentifier COMP_ID_METHOD =
             new ComponentIdentifier("@method");
 
 
     /**
      * The component identifier, {@code "@target-uri"}.
      */
-    private static final ComponentIdentifier COMP_ID_TARGET_URI =
+    static final ComponentIdentifier COMP_ID_TARGET_URI =
             new ComponentIdentifier("@target-uri");
 
 
     /**
      * The component identifier, {@code "authorization"}.
      */
-    private static final ComponentIdentifier COMP_ID_AUTHORIZATION =
+    static final ComponentIdentifier COMP_ID_AUTHORIZATION =
             new ComponentIdentifier("authorization");
 
 
     /**
      * The component identifier, {@code "dpop"}.
      */
-    private static final ComponentIdentifier COMP_ID_DPOP =
+    static final ComponentIdentifier COMP_ID_DPOP =
             new ComponentIdentifier("dpop");
 
 
     /**
      * The component identifier, {@code "content-digest"}.
      */
-    private static final ComponentIdentifier COMP_ID_CONTENT_DIGEST =
+    static final ComponentIdentifier COMP_ID_CONTENT_DIGEST =
             new ComponentIdentifier("content-digest");
 
 
     /**
      * The value of the {@code tag} parameter of the signature metadata.
      */
-    private static final String TAG_VALUE_FAPI_2_REQUEST = "fapi-2-request";
+    static final String TAG_VALUE_FAPI_2_REQUEST = "fapi-2-request";
 
 
     /**

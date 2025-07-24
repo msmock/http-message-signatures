@@ -53,7 +53,7 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     /**
      * The component identifier, {@code "@method";req}.
      */
-    private static final ComponentIdentifier COMP_ID_METHOD_REQ =
+    static final ComponentIdentifier COMP_ID_METHOD_REQ =
             new ComponentIdentifier("@method",
                     new ComponentIdentifierParameters().setReq(true));
 
@@ -61,7 +61,7 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     /**
      * The component identifier, {@code "@target-uri";req}.
      */
-    private static final ComponentIdentifier COMP_ID_TARGET_URI_REQ =
+    static final ComponentIdentifier COMP_ID_TARGET_URI_REQ =
             new ComponentIdentifier("@target-uri",
                     new ComponentIdentifierParameters().setReq(true));
 
@@ -69,7 +69,7 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     /**
      * The component identifier, {@code "content-digest";req}.
      */
-    private static final ComponentIdentifier COMP_ID_CONTENT_DIGEST_REQ =
+    static final ComponentIdentifier COMP_ID_CONTENT_DIGEST_REQ =
             new ComponentIdentifier("content-digest",
                     new ComponentIdentifierParameters().setReq(true));
 
@@ -77,21 +77,21 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     /**
      * The component identifier, {@code "@status"}.
      */
-    private static final ComponentIdentifier COMP_ID_STATUS =
+    static final ComponentIdentifier COMP_ID_STATUS =
             new ComponentIdentifier("@status");
 
 
     /**
      * The component identifier, {@code "content-digest"}.
      */
-    private static final ComponentIdentifier COMP_ID_CONTENT_DIGEST =
+    static final ComponentIdentifier COMP_ID_CONTENT_DIGEST =
             new ComponentIdentifier("content-digest");
 
 
     /**
      * The value of the {@code tag} parameter of the signature metadata.
      */
-    private static final String TAG_VALUE_FAPI_2_RESPONSE = "fapi-2-response";
+    static final String TAG_VALUE_FAPI_2_RESPONSE = "fapi-2-response";
 
 
     /**
@@ -711,7 +711,7 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     }
 
 
-    private static ComponentIdentifier buildComponentIdentifierSignature(SignatureEntry signatureEntry)
+    static ComponentIdentifier buildComponentIdentifierSignature(SignatureEntry signatureEntry)
     {
         // "signature";req;key="{label}"
         return new ComponentIdentifier("signature",
@@ -719,7 +719,7 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     }
 
 
-    private static ComponentIdentifier buildComponentIdentifierSignatureInput(SignatureEntry signatureEntry)
+    static ComponentIdentifier buildComponentIdentifierSignatureInput(SignatureEntry signatureEntry)
     {
         // "signature-input";req;key="{label}"
         return new ComponentIdentifier("signature-input",

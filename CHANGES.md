@@ -1,6 +1,23 @@
 CHANGES
 =======
 
+- `FapiResourceRequestVerifier` class
+  * Change the return type of the `verify` methods from `boolean` to `VerificationInfo`.
+  * Implement additional verification steps on the signature metadata.
+
+- `FapiResourceResponseVerifier` class
+  * Change the return type of the `verify` methods from `boolean` to `VerificationInfo`.
+  * Implement additional verification steps on the signature metadata.
+
+- `SigningInfo` class
+  * Renamed from `SignatureInfo`.
+  * `extends` the `SignatureOperationInfo` class.
+
+- New types
+  * `FapiResourceVerificationUtility` class.
+  * `SignatureOperationInfo` class.
+  * `VerificationInfo` class.
+
 1.4 (2025-07-24)
 ----------------
 

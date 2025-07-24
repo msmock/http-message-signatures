@@ -17,9 +17,13 @@ package com.authlete.hms.fapi;
 
 
 import java.security.SignatureException;
+import java.util.ArrayList;
+import java.util.List;
+import com.authlete.hms.ComponentIdentifier;
 import com.authlete.hms.SignatureBase;
 import com.authlete.hms.SignatureEntry;
 import com.authlete.hms.SignatureMetadata;
+import com.authlete.hms.VerificationInfo;
 import com.authlete.hms.impl.JoseHttpVerifier;
 import com.nimbusds.jose.jwk.JWK;
 
@@ -128,7 +132,8 @@ public class FapiResourceResponseVerifier extends FapiResourceResponseBase<FapiR
      *         A signature entry that contains the signature to be verified.
      *
      * @return
-     *         The result of signature verification.
+     *         Information about the verification operation, including the
+     *         computed signature base and the verification result.
      *
      * @throws IllegalStateException
      *         Mandatory input parameters, such as {@code method},
@@ -138,7 +143,8 @@ public class FapiResourceResponseVerifier extends FapiResourceResponseBase<FapiR
      * @throws SignatureException
      *         Signature verification failed.
      */
-    public boolean verify(SignatureEntry signatureEntry) throws IllegalStateException, SignatureException
+    public VerificationInfo verify(SignatureEntry signatureEntry)
+            throws IllegalStateException, SignatureException
     {
         return verify(signatureEntry.getSignature(), signatureEntry.getMetadata());
     }
@@ -157,7 +163,8 @@ public class FapiResourceResponseVerifier extends FapiResourceResponseBase<FapiR
      *         has been provided together with the signature should be used.
      *
      * @return
-     *         The result of signature verification.
+     *         Information about the verification operation, including the
+     *         computed signature base and the verification result.
      *
      * @throws IllegalStateException
      *         Mandatory input parameters, such as {@code method},
@@ -167,7 +174,8 @@ public class FapiResourceResponseVerifier extends FapiResourceResponseBase<FapiR
      * @throws SignatureException
      *         Signature verification failed.
      */
-    public boolean verify(byte[] signature, SignatureMetadata metadata) throws IllegalStateException, SignatureException
+    public VerificationInfo verify(byte[] signature, SignatureMetadata metadata)
+            throws IllegalStateException, SignatureException
     {
         // Check if a verification key is set.
         checkVerificationKey();
@@ -175,8 +183,41 @@ public class FapiResourceResponseVerifier extends FapiResourceResponseBase<FapiR
         // Create the signature base.
         SignatureBase base = createSignatureBase(metadata);
 
-        // Verify the signature.
-        return verify(signature, base);
+
+        // The verification result.
+        boolean verified = false;
+
+        // The reason of the verification result.
+        String reason = null;
+
+        try
+        {
+            // Check the metadata.
+            checkMetadata(base.getParamsLine().getMetadata());
+
+            // Verified the signature.
+            verified = verify(signature, base);
+
+            if (!verified)
+            {
+                reason = "The signature differs from the expected value.";
+            }
+        }
+        catch (Exception cause)
+        {
+            reason = cause.getMessage();
+        }
+
+        // Collect information about the verification operation.
+        VerificationInfo info = new VerificationInfo()
+                .setVerificationKey(getVerificationKey())
+                .setSignatureBase(base)
+                .setSignature(signature)
+                .setVerified(verified)
+                .setReason(reason)
+                ;
+
+        return info;
     }
 
 
@@ -205,5 +246,60 @@ public class FapiResourceResponseVerifier extends FapiResourceResponseBase<FapiR
     {
         // Verify the signature using the specified verification key.
         return base.verify(new JoseHttpVerifier(getVerificationKey()), signature);
+    }
+
+
+    private void checkMetadata(SignatureMetadata metadata) throws SignatureException
+    {
+        checkComponentIdentifiers(metadata);
+        checkMetadataParameters(metadata);
+    }
+
+
+    private void checkComponentIdentifiers(SignatureMetadata metadata) throws SignatureException
+    {
+        List<ComponentIdentifier> requiredComponents = new ArrayList<>();
+
+        // "@method";req
+        requiredComponents.add(COMP_ID_METHOD_REQ);
+
+        // "@target-uri";req
+        requiredComponents.add(COMP_ID_TARGET_URI_REQ);
+
+        if (getRequestContentDigest() != null)
+        {
+            // "content-digest";req
+            requiredComponents.add(COMP_ID_CONTENT_DIGEST_REQ);
+        }
+
+        getRequestSignatures().forEach(signatureEntry -> {
+            // "signature";req;key="{label}"
+            requiredComponents.add(buildComponentIdentifierSignature(signatureEntry));
+
+            // "signature-input";req;key="{label}"
+            requiredComponents.add(buildComponentIdentifierSignatureInput(signatureEntry));
+        });
+
+        // "@status"
+        requiredComponents.add(COMP_ID_STATUS);
+
+        if (getResponseContentDigest() != null)
+        {
+            // "content-digest"
+            requiredComponents.add(COMP_ID_CONTENT_DIGEST);
+        }
+
+        // Confirm that the metadata contains all the required components.
+        FapiResourceVerificationUtility.checkComponents(metadata, requiredComponents);
+    }
+
+
+    private void checkMetadataParameters(SignatureMetadata metadata) throws SignatureException
+    {
+        // created
+        FapiResourceVerificationUtility.checkParameterCreated(metadata);
+
+        // tag
+        FapiResourceVerificationUtility.checkParameterTag(metadata, TAG_VALUE_FAPI_2_RESPONSE);
     }
 }

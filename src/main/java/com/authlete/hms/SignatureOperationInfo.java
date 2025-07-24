@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2024 Authlete, Inc.
+ * Copyright (C) 2025 Authlete, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -17,23 +17,18 @@ package com.authlete.hms;
 
 
 import org.greenbytes.http.sfv.ByteSequenceItem;
-import com.nimbusds.jose.jwk.JWK;
 
 
 /**
- * Information about signing operation, including the computed signature base
- * and the generated signature.
+ * The base class for {@link SigningInfo} and {@link VerificationInfo}.
  *
- * @since 1.3
+ * @param <T>
+ *         The subclass.
+ *
+ * @since 1.5
  */
-public class SignatureInfo
+public class SignatureOperationInfo<T extends SignatureOperationInfo<T>>
 {
-    /**
-     * The signing key used in the signing operation.
-     */
-    private JWK signingKey;
-
-
     /**
      * The computed signature base.
      */
@@ -41,38 +36,9 @@ public class SignatureInfo
 
 
     /**
-     * The generated signature.
+     * The signature.
      */
     private byte[] signature;
-
-
-    /**
-     * Get the signing key used in the signing operation.
-     *
-     * @return
-     *         The signing key.
-     */
-    public JWK getSigningKey()
-    {
-        return signingKey;
-    }
-
-
-    /**
-     * Set the signing key used in the signing operation.
-     *
-     * @param key
-     *         The signing key.
-     *
-     * @return
-     *         {@code this} object.
-     */
-    public SignatureInfo setSigningKey(JWK key)
-    {
-        this.signingKey = key;
-
-        return this;
-    }
 
 
     /**
@@ -96,11 +62,12 @@ public class SignatureInfo
      * @return
      *         {@code this} object.
      */
-    public SignatureInfo setSignatureBase(SignatureBase base)
+    @SuppressWarnings("unchecked")
+    public T setSignatureBase(SignatureBase base)
     {
         this.signatureBase = base;
 
-        return this;
+        return (T)this;
     }
 
 
@@ -109,8 +76,6 @@ public class SignatureInfo
      *
      * @return
      *         The signature metadata.
-     *
-     * @since 1.4
      */
     public SignatureMetadata getMetadata()
     {
@@ -169,10 +134,10 @@ public class SignatureInfo
 
 
     /**
-     * Get the generated signature.
+     * Get the signature.
      *
      * @return
-     *         The generated signature.
+     *         The signature.
      */
     public byte[] getSignature()
     {
@@ -181,19 +146,20 @@ public class SignatureInfo
 
 
     /**
-     * Set the generated signature.
+     * Set the signature.
      *
      * @param signature
-     *         The generated signature.
+     *         The signature.
      *
      * @return
      *         {@code this} object.
      */
-    public SignatureInfo setSignature(byte[] signature)
+    @SuppressWarnings("unchecked")
+    public T setSignature(byte[] signature)
     {
         this.signature = signature;
 
-        return this;
+        return (T)this;
     }
 
 

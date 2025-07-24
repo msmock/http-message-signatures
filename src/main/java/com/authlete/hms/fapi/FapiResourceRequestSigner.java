@@ -18,7 +18,7 @@ package com.authlete.hms.fapi;
 
 import java.security.SignatureException;
 import com.authlete.hms.SignatureBase;
-import com.authlete.hms.SignatureInfo;
+import com.authlete.hms.SigningInfo;
 import com.authlete.hms.SignatureMetadata;
 import com.authlete.hms.impl.JoseHttpSigner;
 import com.nimbusds.jose.jwk.JWK;
@@ -140,7 +140,7 @@ public class FapiResourceRequestSigner extends FapiResourceRequestBase<FapiResou
      * @throws SignatureException
      *         Signing failed.
      */
-    public SignatureInfo sign() throws IllegalStateException, SignatureException
+    public SigningInfo sign() throws IllegalStateException, SignatureException
     {
         return sign((SignatureMetadata)null);
     }
@@ -166,7 +166,7 @@ public class FapiResourceRequestSigner extends FapiResourceRequestBase<FapiResou
      * @throws SignatureException
      *         Signing failed.
      */
-    public SignatureInfo sign(SignatureMetadata metadata) throws IllegalStateException, SignatureException
+    public SigningInfo sign(SignatureMetadata metadata) throws IllegalStateException, SignatureException
     {
         // Check if a signing key is set.
         checkSigningKey();
@@ -178,7 +178,7 @@ public class FapiResourceRequestSigner extends FapiResourceRequestBase<FapiResou
         byte[] signature = sign(base);
 
         // Collect information about the signing operation.
-        SignatureInfo info = new SignatureInfo()
+        SigningInfo info = new SigningInfo()
                 .setSigningKey(getSigningKey())
                 .setSignatureBase(base)
                 .setSignature(signature)

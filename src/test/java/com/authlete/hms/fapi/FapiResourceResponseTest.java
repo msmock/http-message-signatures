@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.net.URI;
 import java.security.SignatureException;
 import java.text.ParseException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,9 +32,10 @@ import org.junit.jupiter.api.Test;
 import com.authlete.hms.ComponentIdentifier;
 import com.authlete.hms.ComponentIdentifierParameters;
 import com.authlete.hms.SignatureEntry;
-import com.authlete.hms.SignatureInfo;
 import com.authlete.hms.SignatureMetadata;
 import com.authlete.hms.SignatureMetadataParameters;
+import com.authlete.hms.SigningInfo;
+import com.authlete.hms.VerificationInfo;
 import com.nimbusds.jose.jwk.JWK;
 
 
@@ -106,13 +108,13 @@ public class FapiResourceResponseTest
         FapiResourceResponseSigner signer = createSigner(created, signingKey);
 
         // Sign
-        SignatureInfo info = signer.sign();
+        SigningInfo sinfo = signer.sign();
 
         // Check the signature metadata.
-        checkDefaultMetadata(created, info);
+        checkDefaultMetadata(created, sinfo);
 
         // Check the signature serialization.
-        checkSerialization(info);
+        checkSerialization(sinfo);
 
         // Create a verifier.
         FapiResourceResponseVerifier verifier = createVerifier(verificationKey);
@@ -121,21 +123,21 @@ public class FapiResourceResponseTest
         sleep(1000);
 
         // Verify with the default signature metadata. This verification should fail.
-        boolean verified = verifier.verify(info.getSignature(), null);
-        assertFalse(verified, "Signature verification unexpectedly passed.");
+        VerificationInfo vinfo = verifier.verify(sinfo.getSignature(), null);
+        assertFalse(vinfo.isVerified(), "Signature verification unexpectedly passed.");
 
         // Let the verifier use the 'created' value when it builds the default
         // signature metadata.
         verifier.setCreated(created);
 
         // Verify with the default signature metadata. This verification should pass.
-        verified = verifier.verify(info.getSignature(), null);
-        assertTrue(verified, "Signature verification unexpectedly failed.");
+        vinfo = verifier.verify(sinfo.getSignature(), null);
+        assertTrue(vinfo.isVerified(), "Signature verification unexpectedly failed.");
 
         // Verify with the same signature metadata as used for signing.
         // This verification should pass.
-        verified = verifier.verify(info.getSignature(), info.getMetadata());
-        assertTrue(verified, "Signature verification unexpectedly failed.");
+        vinfo = verifier.verify(sinfo.getSignature(), sinfo.getMetadata());
+        assertTrue(vinfo.isVerified(), "Signature verification unexpectedly failed.");
     }
 
 
@@ -168,7 +170,7 @@ public class FapiResourceResponseTest
     }
 
 
-    private static void checkDefaultMetadata(Instant created, SignatureInfo info)
+    private static void checkDefaultMetadata(Instant created, SigningInfo info)
     {
         // Expected signature metadata
         String expectedMetadata = String.format(
@@ -185,7 +187,7 @@ public class FapiResourceResponseTest
     }
 
 
-    private static void checkSerialization(SignatureInfo info)
+    private static void checkSerialization(SigningInfo info)
     {
         // Expected signature serialization
         String expectedSerializedSignature = String.format(":%s:",
@@ -227,26 +229,26 @@ public class FapiResourceResponseTest
                 );
 
         // Sign
-        SignatureInfo info = signer.sign(metadata);
+        SigningInfo sinfo = signer.sign(metadata);
 
         // Check the signature metadata.
-        checkCustomMetadata(created, info);
+        checkCustomMetadata(created, sinfo);
 
         // Create a verifier.
         FapiResourceResponseVerifier verifier = createVerifier(verificationKey);
 
         // Verify with the custom metadata. This verification should pass.
-        boolean verified = verifier.verify(info.getSignature(), metadata);
-        assertTrue(verified, "Signature verification unexpectedly failed.");
+        VerificationInfo vinfo = verifier.verify(sinfo.getSignature(), metadata);
+        assertTrue(vinfo.isVerified(), "Signature verification unexpectedly failed.");
 
         // Verify with the default metadata. This verification should fail.
         verifier.setCreated(created);
-        verified = verifier.verify(info.getSignature(), null);
-        assertFalse(verified, "Signature verification unexpectedly passed.");
+        vinfo = verifier.verify(sinfo.getSignature(), null);
+        assertFalse(vinfo.isVerified(), "Signature verification unexpectedly passed.");
     }
 
 
-    private static void checkCustomMetadata(Instant created, SignatureInfo info)
+    private static void checkCustomMetadata(Instant created, SigningInfo info)
     {
         // Expected signature metadata
         String expectedMetadata = String.format(
@@ -259,5 +261,138 @@ public class FapiResourceResponseTest
         String actualMetadata = info.getSerializedSignatureMetadata();
 
         assertEquals(expectedMetadata, actualMetadata);
+    }
+
+
+    @Test
+    public void test_missing_component() throws ParseException, IllegalStateException, SignatureException
+    {
+        JWK signingKey      = JWK.parse(SIGNING_KEY);
+        JWK verificationKey = signingKey.toPublicJWK();
+        Instant created     = Instant.now();
+
+        // Create a signer.
+        FapiResourceResponseSigner signer = createSigner(created, signingKey);
+
+        // ;req
+        ComponentIdentifierParameters req = new ComponentIdentifierParameters().setReq(true);
+
+        // Signature metadata that is missing mandatory components.
+        SignatureMetadata metadata = new SignatureMetadata(
+                // "@target-uri";req is missing.
+                Arrays.asList(
+                        new ComponentIdentifier("@method", req),
+                        new ComponentIdentifier("content-digest", req),
+                        new ComponentIdentifier("signature", new ComponentIdentifierParameters().setReq(true).setKey("label")),
+                        new ComponentIdentifier("signature-input", new ComponentIdentifierParameters().setReq(true).setKey("label")),
+                        new ComponentIdentifier("@status"),
+                        new ComponentIdentifier("content-digest")
+                ),
+                new SignatureMetadataParameters()
+                    .setCreated(created)
+                    .setTag("fapi-2-response")
+        );
+
+        // Sign with the invalid metadata.
+        SigningInfo sinfo = signer.sign(metadata);
+
+        // Create a verifier.
+        FapiResourceResponseVerifier verifier = createVerifier(verificationKey);
+
+        // Verify with the same signature metadata as used for signing.
+        //
+        // This verification should fail because the required component
+        // "@target-uri";req is missing.
+        VerificationInfo vinfo = verifier.verify(sinfo.getSignature(), sinfo.getMetadata());
+        assertFalse(vinfo.isVerified(), "Signature verification unexpectedly passed.");
+    }
+
+
+    @Test
+    public void test_expired() throws ParseException, IllegalStateException, SignatureException
+    {
+        JWK signingKey      = JWK.parse(SIGNING_KEY);
+        JWK verificationKey = signingKey.toPublicJWK();
+        Instant created     = Instant.now();
+
+        // Create a signer.
+        FapiResourceResponseSigner signer = createSigner(created, signingKey);
+
+        // ;req
+        ComponentIdentifierParameters req = new ComponentIdentifierParameters().setReq(true);
+
+        // Signature metadata with a 'created' parameter set too far in the past,
+        // causing the verifier to consider the HTTP message signature expired.
+        SignatureMetadata metadata = new SignatureMetadata(
+                Arrays.asList(
+                        new ComponentIdentifier("@method", req),
+                        new ComponentIdentifier("@target-uri", req),
+                        new ComponentIdentifier("content-digest", req),
+                        new ComponentIdentifier("signature", new ComponentIdentifierParameters().setReq(true).setKey("label")),
+                        new ComponentIdentifier("signature-input", new ComponentIdentifierParameters().setReq(true).setKey("label")),
+                        new ComponentIdentifier("@status"),
+                        new ComponentIdentifier("content-digest")
+                ),
+                new SignatureMetadataParameters()
+                    .setCreated(created.minus(Duration.ofHours(1)))
+                    .setTag("fapi-2-response")
+        );
+
+        // Sign with the invalid metadata.
+        SigningInfo sinfo = signer.sign(metadata);
+
+        // Create a verifier.
+        FapiResourceResponseVerifier verifier = createVerifier(verificationKey);
+
+        // Verify with the same signature metadata as used for signing.
+        //
+        // This verification should fail because the 'created' parameter
+        // indicates that the HTTP message signature has expired.
+        VerificationInfo vinfo = verifier.verify(sinfo.getSignature(), sinfo.getMetadata());
+        assertFalse(vinfo.isVerified(), "Signature verification unexpectedly passed.");
+    }
+
+
+    @Test
+    public void test_bad_tag() throws ParseException, IllegalStateException, SignatureException
+    {
+        JWK signingKey      = JWK.parse(SIGNING_KEY);
+        JWK verificationKey = signingKey.toPublicJWK();
+        Instant created     = Instant.now();
+
+        // Create a signer.
+        FapiResourceResponseSigner signer = createSigner(created, signingKey);
+
+        // ;req
+        ComponentIdentifierParameters req = new ComponentIdentifierParameters().setReq(true);
+
+        // Signature metadata whose 'tag' parameter holds an unexpected value.
+        SignatureMetadata metadata = new SignatureMetadata(
+                Arrays.asList(
+                        new ComponentIdentifier("@method", req),
+                        new ComponentIdentifier("@target-uri", req),
+                        new ComponentIdentifier("content-digest", req),
+                        new ComponentIdentifier("signature", new ComponentIdentifierParameters().setReq(true).setKey("label")),
+                        new ComponentIdentifier("signature-input", new ComponentIdentifierParameters().setReq(true).setKey("label")),
+                        new ComponentIdentifier("@status"),
+                        new ComponentIdentifier("content-digest")
+                ),
+                new SignatureMetadataParameters()
+                    .setCreated(created)
+                    .setTag("unknown")
+        );
+
+        // Sign with the invalid metadata.
+        SigningInfo sinfo = signer.sign(metadata);
+
+        // Create a verifier.
+        FapiResourceResponseVerifier verifier = createVerifier(verificationKey);
+
+        // Verify with the same signature metadata as used for signing.
+        //
+        // This verification should fail because the 'tag' parameter
+        // holds an unexpected value.
+        VerificationInfo vinfo = verifier.verify(sinfo.getSignature(), sinfo.getMetadata());
+        assertFalse(vinfo.isVerified(), "Signature verification unexpectedly passed.");
     }
 }
