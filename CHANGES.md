@@ -1,6 +1,15 @@
 CHANGES
 =======
 
+- `FapiResourceResponseBase` class
+  * Add the `getAuthorization()` method.
+  * Add the `setAuthorization(String)` method.
+  * Add the `getDpop()` method.
+  * Add the `setDpop(String)` method.
+  * Remove the `getRequestSignatures()` method.
+  * Remove the `addRequestSignature(SignatureEntry)` method.
+  * Remove the `addRequestSignatures(Collection<SignatureEntry>)` method.
+
 1.5 (2025-07-25)
 ----------------
 

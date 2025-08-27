@@ -24,14 +24,11 @@ import java.security.SignatureException;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
-import java.util.List;
 import org.junit.jupiter.api.Test;
 import com.authlete.hms.ComponentIdentifier;
 import com.authlete.hms.ComponentIdentifierParameters;
-import com.authlete.hms.SignatureEntry;
 import com.authlete.hms.SignatureMetadata;
 import com.authlete.hms.SignatureMetadataParameters;
 import com.authlete.hms.SigningInfo;
@@ -59,6 +56,9 @@ public class FapiResourceResponseTest
     // The target URI.
     private static final URI TARGET_URI = URI.create("https://example.com/path?key=value");
 
+    // The value of the Authorization header.
+    private static final String AUTHORIZATION = "Bearer abc";
+
     // The HTTP status.
     private static final int STATUS = 200;
 
@@ -69,19 +69,6 @@ public class FapiResourceResponseTest
     // The "content-digest" value for testing; sha-256 of "{\"hello\": \"world\"}".
     private static final String RESPONSE_CONTENT_DIGEST =
             "sha-256=:X48E9qOokqqrvdts8nOJRJN3OWDUoyWxBf7kbu9DBPE=:";
-
-    // Signature entries that represent HTTP message signatures in the request.
-    private static final List<SignatureEntry> SIGNATURE_ENTRIES = createSignatureEntries();
-
-
-    private static final List<SignatureEntry> createSignatureEntries()
-    {
-        List<SignatureEntry> entries = new ArrayList<>();
-
-        entries.add(new SignatureEntry("label", new byte[] {}, new SignatureMetadata()));
-
-        return entries;
-    }
 
 
     private static void sleep(long milliseconds)
@@ -146,8 +133,8 @@ public class FapiResourceResponseTest
         return new FapiResourceResponseSigner()
                 .setMethod(HTTP_METHOD)
                 .setTargetUri(TARGET_URI)
+                .setAuthorization(AUTHORIZATION)
                 .setRequestContentDigest(REQUEST_CONTENT_DIGEST)
-                .addRequestSignatures(SIGNATURE_ENTRIES)
                 .setStatus(STATUS)
                 .setResponseContentDigest(RESPONSE_CONTENT_DIGEST)
                 .setCreated(created)
@@ -161,8 +148,8 @@ public class FapiResourceResponseTest
         return new FapiResourceResponseVerifier()
                 .setMethod(HTTP_METHOD)
                 .setTargetUri(TARGET_URI)
+                .setAuthorization(AUTHORIZATION)
                 .setRequestContentDigest(REQUEST_CONTENT_DIGEST)
-                .addRequestSignatures(SIGNATURE_ENTRIES)
                 .setStatus(STATUS)
                 .setResponseContentDigest(RESPONSE_CONTENT_DIGEST)
                 .setVerificationKey(verificationKey)
@@ -174,9 +161,8 @@ public class FapiResourceResponseTest
     {
         // Expected signature metadata
         String expectedMetadata = String.format(
-                "(\"@method\";req \"@target-uri\";req \"content-digest\";req " +
-                "\"signature\";req;key=\"label\" \"signature-input\";req;key=\"label\" " +
-                "\"@status\" \"content-digest\")" +
+                "(\"@method\";req \"@target-uri\";req \"authorization\";req " +
+                "\"content-digest\";req \"@status\" \"content-digest\")" +
                 ";created=%d;keyid=\"snIZq-_NvzkKV-IdiM348BCz_RKdwmufnrPubsKKyio\"" +
                 ";tag=\"fapi-2-response\"", created.getEpochSecond());
 
@@ -218,11 +204,10 @@ public class FapiResourceResponseTest
         SignatureMetadata metadata = new SignatureMetadata(
                 Arrays.asList(
                         new ComponentIdentifier("@status"),
-                        new ComponentIdentifier("signature-input", new ComponentIdentifierParameters().setKey("label").setReq(true)),
                         new ComponentIdentifier("content-digest"),
                         new ComponentIdentifier("@target-uri", req),
-                        new ComponentIdentifier("signature", new ComponentIdentifierParameters().setKey("label").setReq(true)),
                         new ComponentIdentifier("content-digest", req),
+                        new ComponentIdentifier("authorization", req),
                         new ComponentIdentifier("@method", req)
                 ),
                 new SignatureMetadataParameters().setTag("fapi-2-response").setCreated(created)
@@ -252,9 +237,8 @@ public class FapiResourceResponseTest
     {
         // Expected signature metadata
         String expectedMetadata = String.format(
-                "(\"@status\" \"signature-input\";key=\"label\";req " +
-                "\"content-digest\" \"@target-uri\";req \"signature\";key=\"label\";req " +
-                "\"content-digest\";req \"@method\";req)" +
+                "(\"@status\" \"content-digest\" \"@target-uri\";req " +
+                "\"content-digest\";req \"authorization\";req \"@method\";req)" +
                 ";tag=\"fapi-2-response\";created=%d", created.getEpochSecond());
 
         // Actual signature metadata
@@ -283,8 +267,6 @@ public class FapiResourceResponseTest
                 Arrays.asList(
                         new ComponentIdentifier("@method", req),
                         new ComponentIdentifier("content-digest", req),
-                        new ComponentIdentifier("signature", new ComponentIdentifierParameters().setReq(true).setKey("label")),
-                        new ComponentIdentifier("signature-input", new ComponentIdentifierParameters().setReq(true).setKey("label")),
                         new ComponentIdentifier("@status"),
                         new ComponentIdentifier("content-digest")
                 ),
@@ -327,9 +309,8 @@ public class FapiResourceResponseTest
                 Arrays.asList(
                         new ComponentIdentifier("@method", req),
                         new ComponentIdentifier("@target-uri", req),
+                        new ComponentIdentifier("authorization", req),
                         new ComponentIdentifier("content-digest", req),
-                        new ComponentIdentifier("signature", new ComponentIdentifierParameters().setReq(true).setKey("label")),
-                        new ComponentIdentifier("signature-input", new ComponentIdentifierParameters().setReq(true).setKey("label")),
                         new ComponentIdentifier("@status"),
                         new ComponentIdentifier("content-digest")
                 ),
@@ -371,9 +352,8 @@ public class FapiResourceResponseTest
                 Arrays.asList(
                         new ComponentIdentifier("@method", req),
                         new ComponentIdentifier("@target-uri", req),
+                        new ComponentIdentifier("authorization", req),
                         new ComponentIdentifier("content-digest", req),
-                        new ComponentIdentifier("signature", new ComponentIdentifierParameters().setReq(true).setKey("label")),
-                        new ComponentIdentifier("signature-input", new ComponentIdentifierParameters().setReq(true).setKey("label")),
                         new ComponentIdentifier("@status"),
                         new ComponentIdentifier("content-digest")
                 ),

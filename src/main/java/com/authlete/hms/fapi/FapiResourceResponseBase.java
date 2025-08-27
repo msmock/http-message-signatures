@@ -20,15 +20,12 @@ import java.net.URI;
 import java.security.SignatureException;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Base64;
-import java.util.Collection;
 import java.util.List;
 import com.authlete.hms.ComponentIdentifier;
 import com.authlete.hms.ComponentIdentifierParameters;
 import com.authlete.hms.SignatureBase;
 import com.authlete.hms.SignatureBaseBuilder;
 import com.authlete.hms.SignatureContext;
-import com.authlete.hms.SignatureEntry;
 import com.authlete.hms.SignatureMetadata;
 import com.authlete.hms.SignatureMetadataParameters;
 
@@ -51,27 +48,45 @@ import com.authlete.hms.SignatureMetadataParameters;
 public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBase<T>>
 {
     /**
+     * The component identifier parameters, {@code ";req"}.
+     */
+    private static final ComponentIdentifierParameters REQ =
+            new ComponentIdentifierParameters().setReq(true);
+
+
+    /**
      * The component identifier, {@code "@method";req}.
      */
     static final ComponentIdentifier COMP_ID_METHOD_REQ =
-            new ComponentIdentifier("@method",
-                    new ComponentIdentifierParameters().setReq(true));
+            new ComponentIdentifier("@method", REQ);
 
 
     /**
      * The component identifier, {@code "@target-uri";req}.
      */
     static final ComponentIdentifier COMP_ID_TARGET_URI_REQ =
-            new ComponentIdentifier("@target-uri",
-                    new ComponentIdentifierParameters().setReq(true));
+            new ComponentIdentifier("@target-uri", REQ);
+
+
+    /**
+     * The component identifier, {@code "authorization";req}.
+     */
+    static final ComponentIdentifier COMP_ID_AUTHORIZATION_REQ =
+            new ComponentIdentifier("authorization", REQ);
+
+
+    /**
+     * The component identifier, {@code "dpop";req}.
+     */
+    static final ComponentIdentifier COMP_ID_DPOP_REQ =
+            new ComponentIdentifier("dpop", REQ);
 
 
     /**
      * The component identifier, {@code "content-digest";req}.
      */
     static final ComponentIdentifier COMP_ID_CONTENT_DIGEST_REQ =
-            new ComponentIdentifier("content-digest",
-                    new ComponentIdentifierParameters().setReq(true));
+            new ComponentIdentifier("content-digest", REQ);
 
 
     /**
@@ -107,6 +122,18 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
 
 
     /**
+     * The value of the {@code Authorization} HTTP field of the request.
+     */
+    private String authorization;
+
+
+    /**
+     * The value of the {@code DPoP} HTTP field of the request.
+     */
+    private String dpop;
+
+
+    /**
      * The value of the {@code Content-Digest} HTTP field of the request.
      */
     private String requestContentDigest;
@@ -128,12 +155,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
      * The value of the {@code created} parameter of the signature metadata.
      */
     private Long created;
-
-
-    /**
-     * The list of signature entries in the request.
-     */
-    private List<SignatureEntry> requestSignatures = new ArrayList<>();
 
 
     /**
@@ -209,6 +230,70 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
     public T setTargetUri(URI targetUri)
     {
         this.targetUri = targetUri;
+
+        return (T)this;
+    }
+
+
+    /**
+     * Get the value of the {@code Authorization} HTTP field of the request.
+     * This is used as the value of the {@code "authorization";req} component.
+     *
+     * @return
+     *         The value of the {@code Authorization} HTTP field of the request.
+     */
+    public String getAuthorization()
+    {
+        return authorization;
+    }
+
+
+    /**
+     * Set the value of the {@code Authorization} HTTP field of the request.
+     * This is used as the value of the {@code "authorization";req} component.
+     *
+     * @param authorization
+     *         The value of the {@code Authorization} HTTP field of the request.
+     *
+     * @return
+     *         {@code this} object.
+     */
+    @SuppressWarnings("unchecked")
+    public T setAuthorization(String authorization)
+    {
+        this.authorization = authorization;
+
+        return (T)this;
+    }
+
+
+    /**
+     * Get the value of the {@code DPoP} HTTP field of the request.
+     * This is used as the value of the {@code "dpop";req} component.
+     *
+     * @return
+     *         The value of the {@code DPoP} HTTP field of the request.
+     */
+    public String getDpop()
+    {
+        return dpop;
+    }
+
+
+    /**
+     * Set the value of the {@code DPoP} HTTP field of the request.
+     * This is used as the value of the {@code "dpop";req} component.
+     *
+     * @param dpop
+     *         The value of the {@code DPoP} HTTP field of the request.
+     *
+     * @return
+     *         {@code this} object.
+     */
+    @SuppressWarnings("unchecked")
+    public T setDpop(String dpop)
+    {
+        this.dpop = dpop;
 
         return (T)this;
     }
@@ -424,73 +509,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
 
 
     /**
-     * Get the list of signature entries that represent HTTP message signatures
-     * in the request.
-     *
-     * @return
-     *         The list of signature entries.
-     */
-    public List<SignatureEntry> getRequestSignatures()
-    {
-        return requestSignatures;
-    }
-
-
-    /**
-     * Add a signature entry that represents an HTTP message signature in the
-     * request.
-     *
-     * <p>
-     * Note that signature entries that do not have the {@code fapi-2-request}
-     * tag should not be added.
-     * </p>
-     *
-     * @param entry
-     *         A signature entry.
-     *
-     * @return
-     *         {@code this} object.
-     */
-    @SuppressWarnings("unchecked")
-    public T addRequestSignature(SignatureEntry entry)
-    {
-        if (entry != null)
-        {
-            requestSignatures.add(entry);
-        }
-
-        return (T)this;
-    }
-
-
-    /**
-     * Add signature entries that represent HTTP message signatures in the
-     * request.
-     *
-     * <p>
-     * Note that signature entries that do not have the {@code fapi-2-request}
-     * tag should not be added.
-     * </p>
-     *
-     * @param entries
-     *         The list of signature entries.
-     *
-     * @return
-     *         {@code this} object.
-     */
-    @SuppressWarnings("unchecked")
-    public T addRequestSignatures(Collection<SignatureEntry> entries)
-    {
-        if (entries != null)
-        {
-            entries.forEach(this::addRequestSignature);
-        }
-
-        return (T)this;
-    }
-
-
-    /**
      * Create the signature base.
      *
      * @param metadata
@@ -532,6 +550,10 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
         // targetUri
         checkParameter("The target URI (the original request URL) of the HTTP request",
                 getTargetUri(), "setTargetUri(URI)");
+
+        // authorization
+        checkParameter("The value of the Authorization HTTP field of the request",
+                getAuthorization(), "setAuthorization(String)");
 
         // status
         checkParameterStatus(getStatus());
@@ -597,6 +619,18 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
                 return (getTargetUri() != null) ? getTargetUri().toASCIIString() : null;
             }
 
+            // "authorization";req
+            if (identifier.equals(COMP_ID_AUTHORIZATION_REQ))
+            {
+                return getAuthorization();
+            }
+
+            // "dpop";req
+            if (identifier.equals(COMP_ID_DPOP_REQ))
+            {
+                return getDpop();
+            }
+
             // "content-digest";req
             if (identifier.equals(COMP_ID_CONTENT_DIGEST_REQ))
             {
@@ -613,35 +647,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
             if (identifier.equals(COMP_ID_CONTENT_DIGEST))
             {
                 return getResponseContentDigest();
-            }
-
-            String  name = identifier.getComponentName();
-            boolean req  = identifier.getParameters().isReq();
-            String  key  = identifier.getParameters().getKey();
-
-            // "signature";req;key="{key}"
-            if (name.equals("signature") && req && key != null)
-            {
-                // ":{base64-encoded-signature}:" or null
-                return getRequestSignatures().stream()
-                        .filter(entry -> entry.getLabel().equals(key))
-                        .map(SignatureEntry::getSignature)
-                        .map(signature -> Base64.getEncoder().encodeToString(signature))
-                        .map(base64 -> String.format(":%s:", base64))
-                        .findFirst()
-                        .orElse(null);
-            }
-
-            // "signature-input";req;key="{key}"
-            if (name.equals("signature-input") && req && key != null)
-            {
-                // "{signature-metadata}" or null
-                return getRequestSignatures().stream()
-                        .filter(entry -> entry.getLabel().equals(key))
-                        .map(SignatureEntry::getMetadata)
-                        .map(SignatureMetadata::serialize)
-                        .findFirst()
-                        .orElse(null);
             }
 
             return null;
@@ -664,19 +669,20 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
         // "@target-uri";req
         identifiers.add(COMP_ID_TARGET_URI_REQ);
 
+        // "authorization";req
+        identifiers.add(COMP_ID_AUTHORIZATION_REQ);
+
+        if (getDpop() != null)
+        {
+            // "dpop";req
+            identifiers.add(COMP_ID_DPOP_REQ);
+        }
+
         if (getRequestContentDigest() != null)
         {
             // "content-digest";req
             identifiers.add(COMP_ID_CONTENT_DIGEST_REQ);
         }
-
-        getRequestSignatures().forEach(signatureEntry -> {
-            // "signature";req;key="{label}"
-            identifiers.add(buildComponentIdentifierSignature(signatureEntry));
-
-            // "signature-input";req;key="{label}"
-            identifiers.add(buildComponentIdentifierSignatureInput(signatureEntry));
-        });
 
         // "@status"
         identifiers.add(COMP_ID_STATUS);
@@ -708,22 +714,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
         // metadata
         //------------------------------------------------------------
         return new SignatureMetadata(identifiers, parameters);
-    }
-
-
-    static ComponentIdentifier buildComponentIdentifierSignature(SignatureEntry signatureEntry)
-    {
-        // "signature";req;key="{label}"
-        return new ComponentIdentifier("signature",
-                new ComponentIdentifierParameters().setReq(true).setKey(signatureEntry.getLabel()));
-    }
-
-
-    static ComponentIdentifier buildComponentIdentifierSignatureInput(SignatureEntry signatureEntry)
-    {
-        // "signature-input";req;key="{label}"
-        return new ComponentIdentifier("signature-input",
-                new ComponentIdentifierParameters().setReq(true).setKey(signatureEntry.getLabel()));
     }
 
 

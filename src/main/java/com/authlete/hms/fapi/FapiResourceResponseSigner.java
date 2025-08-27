@@ -18,8 +18,8 @@ package com.authlete.hms.fapi;
 
 import java.security.SignatureException;
 import com.authlete.hms.SignatureBase;
-import com.authlete.hms.SigningInfo;
 import com.authlete.hms.SignatureMetadata;
+import com.authlete.hms.SigningInfo;
 import com.authlete.hms.impl.JoseHttpSigner;
 import com.nimbusds.jose.jwk.JWK;
 
@@ -36,6 +36,8 @@ import com.nimbusds.jose.jwk.JWK;
  *         .setMethod(<span style="color: darkred;">"GET"</span>)
  *         .setTargetUri(URI.create(<span style="color: darkred;"
  *          >"https://example.com/path?key=value"</span>))
+ *         .setAuthorization(<span style="color: darkred;"
+ *          >"Bearer abc"</span>)
  *         .setStatus(200)
  *         .setResponseContentDigest(
  *             <span style="color: darkred;">"sha-256=:RBNvo1WzZ4oRRq0W9+hknpT7<!--

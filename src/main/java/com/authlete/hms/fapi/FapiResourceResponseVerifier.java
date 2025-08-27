@@ -35,18 +35,13 @@ import com.nimbusds.jose.jwk.JWK;
  * <p><b>Sample Code</b></p>
  *
  * <pre>
- * <span style="color: green;">// The signature in the request.</span>
- * SignatureEntry sigEntryInRequest = ...;
- *
- * <span style="color: green;">// The signature in the response.</span>
- * SignatureEntry sigEntryInResponse = ...;
- *
  * <span style="color: green;">// Create a verifier.</span>
  * FapiResourceResponseVerifier verifier = new FapiResourceResponseVerifier()
  *         .setMethod(<span style="color: darkred;">"POST"</span>)
  *         .setTargetUri(URI.create(<span style="color: darkred;"
  *          >"https://example.com/path?key=value"</span>))
- *         .addRequestSignature(sigEntryInRequest)
+ *         .setAuthorization(<span style="color: darkred;"
+ *          >"Bearer abc"</span>)
  *         .setStatus(200)
  *         .setRequestContentDigest(
  *             <span style="color: darkred;">"sha-256=:RBNvo1WzZ4oRRq0W9+hknpT7<!--
@@ -266,19 +261,20 @@ public class FapiResourceResponseVerifier extends FapiResourceResponseBase<FapiR
         // "@target-uri";req
         requiredComponents.add(COMP_ID_TARGET_URI_REQ);
 
+        // "authorization";req
+        requiredComponents.add(COMP_ID_AUTHORIZATION_REQ);
+
+        if (getDpop() != null)
+        {
+            // "dpop";req
+            requiredComponents.add(COMP_ID_DPOP_REQ);
+        }
+
         if (getRequestContentDigest() != null)
         {
             // "content-digest";req
             requiredComponents.add(COMP_ID_CONTENT_DIGEST_REQ);
         }
-
-        getRequestSignatures().forEach(signatureEntry -> {
-            // "signature";req;key="{label}"
-            requiredComponents.add(buildComponentIdentifierSignature(signatureEntry));
-
-            // "signature-input";req;key="{label}"
-            requiredComponents.add(buildComponentIdentifierSignatureInput(signatureEntry));
-        });
 
         // "@status"
         requiredComponents.add(COMP_ID_STATUS);
