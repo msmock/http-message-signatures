@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+1.6 (2025-08-28)
+----------------
+
 - `FapiResourceResponseBase` class
   * Add the `getAuthorization()` method.
   * Add the `setAuthorization(String)` method.
