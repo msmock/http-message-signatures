@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+1.7 (2025-08-28)
+----------------
+
 - `FapiResourceResponseBase` class
   * Remove the check for the presence of the `"authorization";req` component.
 
