@@ -1,6 +1,9 @@
 CHANGES
 =======
 
+- `FapiResourceResponseBase` class
+  * Add the `"authorization";req` component only if the `Authorization` header is present.
+
 1.7 (2025-08-28)
 ----------------
 

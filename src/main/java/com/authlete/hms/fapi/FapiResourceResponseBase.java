@@ -665,8 +665,11 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
         // "@target-uri";req
         identifiers.add(COMP_ID_TARGET_URI_REQ);
 
-        // "authorization";req
-        identifiers.add(COMP_ID_AUTHORIZATION_REQ);
+        if (getAuthorization() != null)
+        {
+            // "authorization";req
+            identifiers.add(COMP_ID_AUTHORIZATION_REQ);
+        }
 
         if (getDpop() != null)
         {
