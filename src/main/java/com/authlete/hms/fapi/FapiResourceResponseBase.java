@@ -551,10 +551,6 @@ public abstract class FapiResourceResponseBase<T extends FapiResourceResponseBas
         checkParameter("The target URI (the original request URL) of the HTTP request",
                 getTargetUri(), "setTargetUri(URI)");
 
-        // authorization
-        checkParameter("The value of the Authorization HTTP field of the request",
-                getAuthorization(), "setAuthorization(String)");
-
         // status
         checkParameterStatus(getStatus());
     }
